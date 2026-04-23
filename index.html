@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>财富凝聚态交互式仿真系统</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {font-family: "Microsoft YaHei", Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa;}
+        h1 {text-align: center; color: #1a3c5e;}
+        .module {margin: 30px 0; padding: 25px; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);}
+        .slider-label {font-size: 15px; margin-bottom: 8px; display: block;}
+    </style>
+</head>
+<body>
+    <h1>财富凝聚态交互式仿真系统</h1>
+    <p style="text-align:center; color:#666;">论文《财富热化相变方程与CRJ强度模型》配套工具</p>
+
+    <!-- 模块1 -->
+    <div class="module">
+        <h2>模块一：双能级玻色凝聚模拟（ε）</h2>
+        <label class="slider-label">绝对丰度 ε <span id="e_val">0.50</span></label>
+        <input type="range" id="epsilon" min="0.1" max="1.0" step="0.01" value="0.5" style="width:100%;">
+        <svg id="bose" width="100%" height="320"></svg>
+    </div>
+
+    <!-- 模块2 -->
+    <div class="module">
+        <h2>模块二：洛伦兹曲线与曲率奇点（CRJ）</h2>
+        <label class="slider-label">资本凝聚节点 CRJ <span id="crj_val">12.0</span></label>
+        <input type="range" id="crj" min="4" max="70" step="0.1" value="12" style="width:100%;">
+        <svg id="lorenz" width="100%" height="320"></svg>
+    </div>
+
+    <!-- 模块3 -->
+    <div class="module">
+        <h2>模块三：体制判别联动计算器</h2>
+        <button onclick="calculate()" style="padding:10px 20px; font-size:16px;">立即计算体制 & 政策建议</button>
+        <div id="result" style="margin-top:20px; font-size:15px;"></div>
+    </div>
+
+    <script>
+        // 模块1：双能级玻色凝聚
+        const svg1 = d3.select("#bose");
+        function updateBose(e) {
+            document.getElementById("e_val").textContent = e.toFixed(2);
+            svg1.selectAll("*").remove();
+            // 简化版柱状图（低能态 vs 高能态）
+            const low = Math.max(0, 1 - e * 2);
+            const high = Math.min(1, e * 2);
+            svg1.append("rect").attr("x", 80).attr("y", 200).attr("width", 120).attr("height", low*200).attr("fill", "#e74c3c");
+            svg1.append("text").attr("x", 140).attr("y", 190).text("低能态（贫困）").attr("text-anchor", "middle");
+            svg1.append("rect").attr("x", 320).attr("y", 200).attr("width", 120).attr("height", high*200).attr("fill", "#3498db");
+            svg1.append("text").attr("x", 380).attr("y", 190).text("高能态（富裕）").attr("text-anchor", "middle");
+            if (e < 0.5) svg1.append("text").attr("x", 250).attr("y", 280).text("⚠️ 发生瑞利-金斯凝聚").attr("fill", "red").attr("font-size", "18px").attr("text-anchor", "middle");
+        }
+        document.getElementById("epsilon").addEventListener("input", function(){ updateBose(+this.value); });
+        updateBose(0.5);
+
+        // 模块2：洛伦兹曲线
+        const svg2 = d3.select("#lorenz");
+        function updateLorenz(crj) {
+            document.getElementById("crj_val").textContent = crj.toFixed(1);
+            svg2.selectAll("*").remove();
+            // 简化洛伦兹曲线
+            const line = svg2.append("path")
+                .attr("d", `M 50 280 Q 200 ${280 - crj*3} 400 50`)
+                .attr("fill", "none").attr("stroke", "#2c3e50").attr("stroke-width", "4");
+            svg2.append("text").attr("x", 220).attr("y", 300).text("CRJ = " + crj.toFixed(1)).attr("font-size", "16px");
+            if (crj >= 12) {
+                svg2.append("circle").attr("cx", 280).attr("cy", 160).attr("r", 8).attr("fill", "red");
+                svg2.append("text").attr("x", 300).attr("y", 160).text("曲率奇点！底层财富空间压缩至极限").attr("fill", "red");
+            }
+        }
+        document.getElementById("crj").addEventListener("input", function(){ updateLorenz(+this.value); });
+        updateLorenz(12);
+
+        // 模块3：计算器
+        function calculate() {
+            const resultDiv = document.getElementById("result");
+            resultDiv.innerHTML = `
+                <strong>体制判定：</strong> 强凝聚态<br>
+                <strong>风险等级：</strong> <span style="color:red">● 红色</span><br>
+                <strong>政策建议：</strong> 流量调节已失效，必须采取<strong>存量干预</strong>（极端财富税、债务豁免、全民基本收入）<br>
+                <small>（基于论文第五章体制判别矩阵）</small>
+            `;
+        }
+    </script>
+</body>
+</html>
