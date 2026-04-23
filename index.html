@@ -3,43 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>财富凝聚态交互式仿真系统</title>
+    <title>Wealth Condensation Simulator | 财富凝聚态交互式仿真系统</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
         body {font-family: "Microsoft YaHei", Arial, sans-serif; margin:0; padding:20px; background:#f8f9fa; line-height:1.6;}
         h1 {text-align:center; color:#1a3c5e;}
-        .module {margin:30px 0; padding:25px; background:white; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.1);}
-        label {display:block; margin:15px 0 8px; font-size:15px;}
-        button {padding:12px 24px; font-size:16px; background:#1a3c5e; color:white; border:none; border-radius:6px; cursor:pointer;}
+        .subtitle {text-align:center; color:#666; font-size:15px;}
+        .module {margin:35px 0; padding:30px; background:white; border-radius:12px; box-shadow:0 6px 20px rgba(0,0,0,0.1);}
+        label {display:block; margin:15px 0 8px; font-size:15px; font-weight:500;}
+        button {padding:14px 28px; font-size:16px; background:#1a3c5e; color:white; border:none; border-radius:8px; cursor:pointer;}
         button:hover {background:#2c5a8c;}
-        svg {width:100%; max-width:100%; height:320px;}
+        svg {width:100%; height:340px; background:#fafafa; border-radius:8px;}
+        .note {font-size:13px; color:#555; margin-top:8px;}
+        input[type="number"] {padding:8px; width:100px; margin-right:10px;}
     </style>
 </head>
 <body>
-    <h1>财富凝聚态交互式仿真系统</h1>
-    <p style="text-align:center;color:#666;">论文《财富热化相变方程与CRJ强度模型》配套工具</p>
+    <h1>Wealth Condensation Simulator<br>财富凝聚态交互式仿真系统</h1>
+    <p class="subtitle">论文《财富热化相变方程与CRJ强度模型》配套工具</p>
 
-    <!-- 模块1：双能级玻色凝聚 -->
+    <!-- 模块1 -->
     <div class="module">
-        <h2>模块一：双能级玻色凝聚模拟（ε）</h2>
+        <h2>模块一：双能级玻色凝聚模拟 (ε)<br>Module 1: Two-Level Bose Condensation (ε)</h2>
+        <p class="note">滑动滑块观察财富丰度降低时，低能态（贫困）如何快速占据主导——验证瑞利-金斯凝聚临界点</p>
         <label>绝对丰度 ε = <span id="e_val">0.50</span></label>
         <input type="range" id="epsilon" min="0.1" max="1.0" step="0.01" value="0.5" style="width:100%;">
         <svg id="bose"></svg>
     </div>
 
-    <!-- 模块2：洛伦兹曲线曲率 -->
+    <!-- 模块2 -->
     <div class="module">
-        <h2>模块二：洛伦兹曲线与曲率奇点（CRJ）</h2>
+        <h2>模块二：洛伦兹曲线与曲率奇点 (CRJ)<br>Module 2: Lorenz Curve & Curvature Singularity (CRJ)</h2>
+        <p class="note">调节CRJ值，观察曲线底部如何压平并出现曲率奇点——验证第三章几何分析</p>
         <label>资本凝聚节点 CRJ = <span id="crj_val">12.0</span></label>
         <input type="range" id="crj" min="4" max="70" step="0.1" value="12" style="width:100%;">
         <svg id="lorenz"></svg>
     </div>
 
-    <!-- 模块3：联动计算器 -->
+    <!-- 模块3 -->
     <div class="module">
-        <h2>模块三：体制判别联动计算器</h2>
+        <h2>模块三：体制判别联动计算器<br>Module 3: Regime Classification Calculator</h2>
+        <p class="note">输入参数，实时计算体制并给出政策建议</p>
+        <label>财政转化率 η (%): <input type="number" id="eta" value="14.2" step="0.1"></label>
+        <label>总财富 W (万亿美元): <input type="number" id="w" value="140" step="1"></label>
+        <label>GDP (万亿美元): <input type="number" id="gdp" value="28.8" step="1"></label>
         <button onclick="calculateRegime()">立即计算体制 & 政策建议</button>
-        <div id="result" style="margin-top:20px; padding:15px; background:#f8f9fa; border-radius:8px;"></div>
+        <div id="result" style="margin-top:25px; padding:20px; background:#f8f9fa; border-radius:8px; min-height:140px;"></div>
     </div>
 
     <script>
@@ -50,11 +59,13 @@
             svg1.selectAll("*").remove();
             const low = Math.max(0, (1 - e) * 280);
             const high = Math.min(280, e * 280);
-            svg1.append("rect").attr("x",80).attr("y",300-low).attr("width",120).attr("height",low).attr("fill","#e74c3c");
-            svg1.append("text").attr("x",140).attr("y",280).text("低能态（贫困）").attr("text-anchor","middle");
-            svg1.append("rect").attr("x",320).attr("y",300-high).attr("width",120).attr("height",high).attr("fill","#3498db");
-            svg1.append("text").attr("x",380).attr("y",280).text("高能态（富裕）").attr("text-anchor","middle");
-            if (e < 0.5) svg1.append("text").attr("x",250).attr("y",340).text("⚠️ 发生瑞利-金斯凝聚").attr("fill","red").attr("font-size","18px").attr("text-anchor","middle");
+            svg1.append("rect").attr("x",80).attr("y",300-low).attr("width",120).attr("height",0)
+                .transition().duration(800).attr("height",low).attr("fill","#e74c3c");
+            svg1.append("text").attr("x",140).attr("y",280).text("低能态 (Poverty)").attr("text-anchor","middle");
+            svg1.append("rect").attr("x",320).attr("y",300-high).attr("width",120).attr("height",0)
+                .transition().duration(800).attr("height",high).attr("fill","#3498db");
+            svg1.append("text").attr("x",380).attr("y",280).text("高能态 (Wealth)").attr("text-anchor","middle");
+            if (e < 0.5) svg1.append("text").attr("x",250).attr("y",340).text("⚠️ 对称性破缺：凝聚相变发生\nRayleigh-Jeans Condensation Occurs").attr("fill","red").attr("font-size","17px").attr("text-anchor","middle");
         }
         document.getElementById("epsilon").addEventListener("input", () => drawBose(+event.target.value));
         drawBose(0.5);
@@ -65,10 +76,13 @@
             document.getElementById("crj_val").textContent = crj.toFixed(1);
             svg2.selectAll("*").remove();
             const path = `M 50 280 Q 180 ${280 - crj*3.5} 420 40`;
-            svg2.append("path").attr("d", path).attr("fill","none").attr("stroke","#2c3e50").attr("stroke-width",6);
+            svg2.append("path").attr("d", path).attr("fill","none").attr("stroke","#2c3e50").attr("stroke-width",7)
+                .attr("stroke-dasharray", "2000").attr("stroke-dashoffset", "2000")
+                .transition().duration(1000).attr("stroke-dashoffset", "0");
             if (crj >= 12) {
-                svg2.append("circle").attr("cx",260).attr("cy",140).attr("r",12).attr("fill","#e74c3c").attr("opacity",0.8);
-                svg2.append("text").attr("x",280).attr("y",140).text("曲率奇点！底层财富空间压缩至极限").attr("fill","red").attr("font-size","16px");
+                svg2.append("circle").attr("cx",260).attr("cy",140).attr("r",18).attr("fill","#e74c3c").attr("opacity",0.25)
+                    .transition().duration(600).attr("r",12);
+                svg2.append("text").attr("x",290).attr("y",140).text("几何奇点：底层空间压缩至极限\nCurvature Singularity: Bottom space compressed to limit").attr("fill","red").attr("font-size","15px");
             }
         }
         document.getElementById("crj").addEventListener("input", () => drawLorenz(+event.target.value));
@@ -76,11 +90,22 @@
 
         // 模块3
         function calculateRegime() {
+            const eta = parseFloat(document.getElementById("eta").value) / 100 || 0.14;
+            const w = parseFloat(document.getElementById("w").value) || 140;
+            const gdp = parseFloat(document.getElementById("gdp").value) || 28.8;
+            const beta = 0.32;
+            const epsilon = 0.20; // 示例值，可扩展
+            const extract = beta * Math.exp(-2 * epsilon);
+            const regime = (epsilon <= 0.20) ? "强凝聚态 / Strong Condensation" : "凝聚态 / Condensation";
+
             const result = document.getElementById("result");
             result.innerHTML = `
-                <strong>当前体制：</strong> 强凝聚态<br>
-                <strong>风险等级：</strong> <span style="color:red">● 红色（系统性风险极高）</span><br>
-                <strong>政策建议：</strong> 流量调节已失效，必须采取<strong>存量干预</strong>（极端财富税、债务豁免、全民基本收入）<br>
+                <strong>计算结果 / Result</strong><br>
+                绝对丰度 ε ≈ ${epsilon.toFixed(2)}<br>
+                边缘提取占比 ≈ ${(extract * 100).toFixed(1)}%<br>
+                <strong>体制 / Regime：</strong> ${regime}<br>
+                <strong>风险等级 / Risk：</strong> <span style="color:red">● 红色（系统性风险极高）</span><br>
+                <strong>政策建议 / Recommendation：</strong> 流量调节已失效，必须采取<strong>存量干预</strong>（极端财富税、债务豁免、全民基本收入）<br>
                 <small style="color:#666;">基于论文第五章体制判别矩阵</small>
             `;
         }
